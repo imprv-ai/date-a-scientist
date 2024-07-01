@@ -1,0 +1,23 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.shell
+    description: Installing all python depedencies
+    in:
+      cmd: poetry install
+
+  - name: pypyr.steps.cmd
+    description: Installing all git hooks
+    in:
+      cmd: poetry run pre-commit install
+
+  - name: pypyr.steps.cmd
+    description: Installing doc dependencies
+    in:
+      cmd:
+        # https://github.com/KarnerTh/mermerd
+        - go install github.com/KarnerTh/mermerd@latest
+        # https://github.com/mermaid-js/mermaid-cli
+        - npm install -g @mermaid-js/mermaid-cli

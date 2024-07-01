@@ -1,0 +1,25 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.cmd
+    description: Running linter for {src_dir}
+    in:
+      cmd: poetry run flake8 --max-line-length={max_line_length} --exclude={linter_exclude} --ignore {linter_ignore_errors} {src_dir}
+
+  - name: pypyr.steps.cmd
+    description: Running linter for {test_dir}
+    in:
+      cmd: poetry run flake8 --max-line-length={max_line_length} --exclude={linter_exclude} --ignore {linter_ignore_errors} {test_dir}
+
+  # FIXME: uncomment when you have mypy set up
+  # - name: pypyr.steps.cmd
+  #   description: Running static type checking for {src_dir}
+  #   in:
+  #     cmd: poetry run mypy {src_dir}
+
+on_failure:
+  - name: pypyr.steps.echo
+    in:
+      echoMe: Please run `pypyr format` in order to impose automatic formatting of your code.

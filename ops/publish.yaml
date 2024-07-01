@@ -1,0 +1,15 @@
+
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.shell
+    description: Publishing
+    in:
+      cmd: source .env && poetry publish --build --username=$PYPI_USERNAME --password=$PYPI_PASSWORD
+
+on_failure:
+  - name: pypyr.steps.echo
+    in:
+      echoMe: publish failed, investigate the output

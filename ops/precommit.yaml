@@ -1,0 +1,14 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.cmd
+    description: Running pre-commit hooks
+    in:
+      cmd: pre-commit run --all-files
+
+on_failure:
+  - name: pypyr.steps.echo
+    in:
+      echoMe: pre-commit hooks failed, investigate the output
