@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "date-a-scientist"
-version = "0.1.4"
+version = "0.1.5"
 description = "Query dataframes, find issue with your notebook snippets as if a professional data scientist was pair coding with you"
 authors = ["IMPRV Dev Team <dev@imprv.ai>"]
 readme = "README.md"
@@ -12,8 +12,8 @@ classifiers = [
 ]
 
 [tool.poetry.urls]
-Homepage = "https://github.com/imprv-ai/date-a-scientist/sampleproject"
-Issues = "https://github.com/imprv-ai/date-a-scientist/sampleproject/issues"
+Homepage = "https://github.com/imprv-ai/date-a-scientist"
+Issues = "https://github.com/imprv-ai/date-a-scientist/issues"
 
 [tool.poetry.dependencies]
 python = "^3.10"
