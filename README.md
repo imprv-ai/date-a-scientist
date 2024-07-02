@@ -48,7 +48,7 @@ ds = DateAScientist(
     llm_model_name="gpt-3.5-turbo",  # by default, it uses "gpt-4o"
 )
 
-# should return "Alice"
+# should return DataFrame with Chicago rows
 ds.chat("Who lives in Chicago?")
 ```
 
