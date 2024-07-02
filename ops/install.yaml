@@ -1,0 +1,14 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - pypyr.steps.debug
+  - pypyr.steps.configvars
+
+  - name: pypyr.steps.shell
+    description: Installing all python depedencies
+    in:
+      cmd: poetry install
+
+  - name: pypyr.steps.cmd
+    description: Installing all git hooks
+    in:
+      cmd: poetry run pre-commit install

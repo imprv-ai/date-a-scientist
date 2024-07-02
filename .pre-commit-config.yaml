@@ -1,0 +1,33 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+    - id: debug-statements
+    - id: check-added-large-files
+      args: ["--maxkb=10240"]
+    - id: detect-private-key
+
+-   repo: local
+    hooks:
+      # it behaves in a weird way, must check why
+      # - id: check-format
+      #   name: check if code is formatted
+      #   entry: pypyr check_format
+      #   language: system
+      #   types: [python]
+      #   pass_filenames: false
+
+      - id: lint
+        name: check if code is passing linter
+        entry: pypyr lint
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: test
+        name: run all tests
+        entry: pypyr test
+        language: system
+        types: [python]
+        pass_filenames: false
+        verbose: true
