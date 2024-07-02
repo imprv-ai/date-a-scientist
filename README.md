@@ -28,6 +28,30 @@ ds = DateAScientist(
 ds.chat("What is the name of the first person?")
 ```
 
+Additionally we can pass a description of fields, so that more meaningful questions can be asked:
+
+```python
+ds = DateAScientist(
+    df=df,
+    llm_openai_api_token=...,  # your OpenAI API token goes here
+    llm_model_name="gpt-3.5-turbo",  # by default, it uses "gpt-4o"
+    column_descriptions={
+        "name": "The name of the person",
+        "age": "The age of the person",
+        "city": "The city where the person lives",
+    },
+)
+
+ds = DateAScientist(
+    df=df,
+    llm_openai_api_token=...,  # your OpenAI API token goes here
+    llm_model_name="gpt-3.5-turbo",  # by default, it uses "gpt-4o"
+)
+
+# should return "Alice"
+ds.chat("Who lives in Chicago?")
+```
+
 ## Inspirations
 
 - https://github.com/sinaptik-ai/pandas-ai

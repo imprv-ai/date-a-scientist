@@ -9,12 +9,13 @@ repos:
 
 -   repo: local
     hooks:
-      - id: check-format
-        name: check if code is formatted
-        entry: pypyr check_format
-        language: system
-        types: [python]
-        pass_filenames: false
+      # it behaves in a weird way, must check why
+      # - id: check-format
+      #   name: check if code is formatted
+      #   entry: pypyr check_format
+      #   language: system
+      #   types: [python]
+      #   pass_filenames: false
 
       - id: lint
         name: check if code is passing linter

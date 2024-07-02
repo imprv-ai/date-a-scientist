@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "date-a-scientist"
-version = "0.1.5"
+version = "0.1.6"
 description = "Query dataframes, find issue with your notebook snippets as if a professional data scientist was pair coding with you"
 authors = ["IMPRV Dev Team <dev@imprv.ai>"]
 readme = "README.md"
@@ -49,7 +49,7 @@ src_dir = "date_a_scientist"
 test_dir = "tests"
 python_target_version = "py311"
 max_line_length = "120"
-min_coverage = "50"
+min_coverage = "60"
 coverage_dir = "coverage"
 linter_ignore_errors = "D100,D101,D102,D103,D104,D105,D106,D107,D202,E203,E231,W503,N806,E712"
 linter_exclude = ""

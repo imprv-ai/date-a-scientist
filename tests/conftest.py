@@ -10,3 +10,8 @@ def env():
 @pytest.fixture(scope="session")
 def openai_api_token(env) -> str:
     return env["OPENAI_API_KEY"]
+
+
+@pytest.fixture(scope="session")
+def openai_free_api_token(env) -> str:
+    return env["OPENAI_FREE_API_KEY"]
