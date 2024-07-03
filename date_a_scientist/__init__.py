@@ -73,12 +73,14 @@ class DateAScientist:
         llm_openai_api_token: str | None = None,
         llm_openai_model: str = "gpt-4o",
         column_descriptions: dict[str, str] | None = None,
+        enable_cache: bool = False,
     ) -> None:
         self._df = df
         self._column_descriptions = column_descriptions
         self._llm_openai_api_token = llm_openai_api_token
         self._validate_model(llm_openai_model)
         self._llm_openai_model = llm_openai_model
+        self._enable_cache = enable_cache
 
     def _validate_model(self, llm_openai_model: str) -> None:
         if llm_openai_model not in self.ALLOWED_ML_MODELS:
@@ -97,8 +99,7 @@ class DateAScientist:
                     path = match.group()
 
                     try:
-                        from IPython.display import \
-                            Image  # type: ignore[import]
+                        from IPython.display import Image  # type: ignore[import]
 
                         return Image(path)
 
@@ -137,7 +138,13 @@ class DateAScientist:
 
         return Agent(
             connector,
-            config={"llm": llm, "enable_logging": False, "open_charts": False, "save_charts": False},
+            config={
+                "llm": llm,
+                "enable_logging": False,
+                "open_charts": False,
+                "save_charts": False,
+                "enable_cache": self._enable_cache,
+            },
             memory_size=10,
         )
 
