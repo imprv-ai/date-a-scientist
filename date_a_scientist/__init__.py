@@ -74,6 +74,7 @@ class DateAScientist:
         llm_openai_model: str = "gpt-4o",
         column_descriptions: dict[str, str] | None = None,
         enable_cache: bool = False,
+        verbose: bool = False,
     ) -> None:
         self._df = df
         self._column_descriptions = column_descriptions
@@ -81,6 +82,7 @@ class DateAScientist:
         self._validate_model(llm_openai_model)
         self._llm_openai_model = llm_openai_model
         self._enable_cache = enable_cache
+        self._verbose = verbose
 
     def _validate_model(self, llm_openai_model: str) -> None:
         if llm_openai_model not in self.ALLOWED_ML_MODELS:
@@ -144,6 +146,8 @@ class DateAScientist:
                 "open_charts": False,
                 "save_charts": False,
                 "enable_cache": self._enable_cache,
+                "save_logs": True,
+                "verbose": self._verbose,
             },
             memory_size=10,
         )
