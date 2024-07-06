@@ -1,6 +1,6 @@
 
 <picture align="center">
-  <source media="(prefers-color-scheme: dark)" srcset="assets/img/scientist_logo.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/img/date-a-scientist_logo.svg">
   <img alt="date-a-scientist Logo" src="assets/img/date-a-scientist_logo_white.svg">
 </picture>
 
