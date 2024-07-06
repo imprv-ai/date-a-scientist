@@ -1,12 +1,12 @@
 
 <picture align="center">
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/img/scientist_logo.svg">
-  <img alt="date-a-scientist Logo" src="./assets/img/date-a-scientist_logo_white.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/img/scientist_logo.svg">
+  <img alt="date-a-scientist Logo" src="assets/img/date-a-scientist_logo_white.svg">
 </picture>
 
 -----------------
 
-# date-a-scientist (pronounced "data scientist" ;-) )
+# date-a-scientist
 
 Query dataframes, find issue with your notebook snippets as if a professional data scientist was pair coding with you.
 
