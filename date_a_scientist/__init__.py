@@ -2,8 +2,11 @@ import re
 from functools import cached_property
 from getpass import getpass
 from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 import pandas as pd
+import requests
+import validators
 from openai import NotFoundError as OpenAINotFoundError  # type: ignore[import]
 from pandasai import Agent  # type: ignore[import-untyped]
 from pandasai.connectors import PandasConnector  # type: ignore[import-untyped]
@@ -69,20 +72,49 @@ class DateAScientist:
 
     def __init__(
         self,
-        df: pd.DataFrame,
+        df: pd.DataFrame | str,
         llm_openai_api_token: str | None = None,
         llm_openai_model: str = "gpt-4o",
-        column_descriptions: dict[str, str] | None = None,
+        column_descriptions: dict[str, str] | str | None = None,
         enable_cache: bool = False,
         verbose: bool = False,
     ) -> None:
-        self._df = df
-        self._column_descriptions = column_descriptions
+        self._df = self._fetch_df(df)
+        self._column_descriptions = self._fetch_column_descriptions(column_descriptions)
+
         self._llm_openai_api_token = llm_openai_api_token
         self._validate_model(llm_openai_model)
         self._llm_openai_model = llm_openai_model
         self._enable_cache = enable_cache
         self._verbose = verbose
+
+    def _fetch_df(self, df: pd.DataFrame | str) -> pd.DataFrame:
+        if isinstance(df, str) and self._is_valid_url(df):
+            query_params = parse_qs(urlparse(df).query)
+
+            encoding = query_params.get("encoding", [None])[0] or "utf-8"
+            sep = query_params.get("sep", [None])[0] or ","
+
+            return pd.read_csv(df, encoding=encoding, sep=sep)
+
+        elif isinstance(df, str):
+            raise ValueError("Please provide a valid URL to fetch the data.")
+
+        return df
+
+    def _fetch_column_descriptions(
+        self, column_descriptions: dict[str, str] | str | None = None
+    ) -> dict[str, str] | None:
+        if isinstance(column_descriptions, str) and self._is_valid_url(column_descriptions):
+            return requests.get(column_descriptions).json()
+
+        elif isinstance(column_descriptions, str):
+            raise ValueError("Please provide a valid URL to fetch the column descriptions.")
+
+        return column_descriptions
+
+    def _is_valid_url(self, url):
+        return validators.url(url)
 
     def _validate_model(self, llm_openai_model: str) -> None:
         if llm_openai_model not in self.ALLOWED_ML_MODELS:
@@ -101,7 +133,8 @@ class DateAScientist:
                     path = match.group()
 
                     try:
-                        from IPython.display import Image  # type: ignore[import]
+                        from IPython.display import \
+                            Image  # type: ignore[import]
 
                         return Image(path)
 
