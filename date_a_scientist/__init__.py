@@ -2,7 +2,7 @@ import re
 from functools import cached_property
 from getpass import getpass
 from typing import Any
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import pandas as pd
 import requests
@@ -90,17 +90,39 @@ class DateAScientist:
 
     def _fetch_df(self, df: pd.DataFrame | str) -> pd.DataFrame:
         if isinstance(df, str) and self._is_valid_url(df):
-            query_params = parse_qs(urlparse(df).query)
+            url, encoding, sep = self._retrieve_params_from_url(df)
 
-            encoding = query_params.get("encoding", [None])[0] or "utf-8"
-            sep = query_params.get("sep", [None])[0] or ","
-
-            return pd.read_csv(df, encoding=encoding, sep=sep)
+            return pd.read_csv(url, encoding=encoding, sep=sep)
 
         elif isinstance(df, str):
             raise ValueError("Please provide a valid URL to fetch the data.")
 
         return df
+
+    def _retrieve_params_from_url(self, url: str) -> tuple[str, str, str]:
+        parsed_url = urlparse(url)
+        query_params = parse_qs(parsed_url.query)
+
+        params_to_remove = ["sep", "encoding"]
+        encoding = query_params.get("encoding", [None])[0] or "utf-8"
+        sep = query_params.get("sep", [None])[0] or ","
+        for param in params_to_remove:
+            query_params.pop(param, None)
+
+        new_query_string = urlencode(query_params, doseq=True)
+
+        new_url = urlunparse(
+            (
+                parsed_url.scheme,
+                parsed_url.netloc,
+                parsed_url.path,
+                parsed_url.params,
+                new_query_string,
+                parsed_url.fragment,
+            )
+        )
+
+        return new_url, encoding, sep
 
     def _fetch_column_descriptions(
         self, column_descriptions: dict[str, str] | str | None = None
