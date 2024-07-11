@@ -152,3 +152,25 @@ class TestDateAScientist(BaseTestCase):
             "Unfortunately, I was not able to answer your question, because of the following error:\n\n"
             "Sorry, I cannot answer this question. Please check if you've enabled paid tier in OpenAI.\n"
         )
+
+    def test_data_scientist__fake_malicious_code_in_query(self):
+        # GIVEN
+        df = pd.DataFrame(
+            [
+                {"name": "Alice", "age": 25, "city": "New York"},
+                {"name": "Bob", "age": 30, "city": "Los Angeles"},
+                {"name": "Charlie", "age": 35, "city": "Chicago"},
+            ]
+        )
+        ds = DateAScientist(
+            df=df,
+            llm_openai_api_token=self.openai_api_token,
+        )
+
+        # WHEN
+        # THEN
+        # normally this results with:
+        # > 'Unfortunately, I was not able to get your answers, because of the following error:\n\nThe query contains
+        #   references to io or os modules or b64decode method which can be used to execute or access system resources
+        #   in unsafe ways.\n'
+        assert ds.chat("Jakie imię jest ostatnie?") == "Charlie"

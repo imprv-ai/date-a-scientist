@@ -1861,13 +1861,13 @@ types-pytz = ">=2022.1.1"
 
 [[package]]
 name = "pandasai"
-version = "2.2.8"
+version = "2.2.10"
 description = "Chat with your database (SQL, CSV, pandas, polars, mongodb, noSQL, etc). PandasAI makes data analysis conversational using LLMs (GPT 3.5 / 4, Anthropic, VertexAI) and RAG."
 optional = false
 python-versions = "!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*,!=3.8.*,>=3.9"
 files = [
-    {file = "pandasai-2.2.8-py3-none-any.whl", hash = "sha256:26e3021d235ffe7ea71a4851ec4de80846dc2e34343aa337fb7f56f977548c60"},
-    {file = "pandasai-2.2.8.tar.gz", hash = "sha256:e7ebe0482841ada8d9596b28c24edcf66af2a4e8b9f60648beca8d98dca6fa4d"},
+    {file = "pandasai-2.2.10-py3-none-any.whl", hash = "sha256:72ce173e9265892d6424a6540b4d2a75cbbf0b0170435c541ab5f18f4724afef"},
+    {file = "pandasai-2.2.10.tar.gz", hash = "sha256:022a6ed3c39558b03d61eac1fdf0de77c2dca7357dd1d36f251ba30460095252"},
 ]
 
 [package.dependencies]
