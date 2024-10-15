@@ -1,3 +1,5 @@
+import json
+import os
 import re
 from functools import cached_property
 from getpass import getpass
@@ -8,13 +10,13 @@ import pandas as pd
 import requests
 import validators
 from openai import NotFoundError as OpenAINotFoundError  # type: ignore[import]
-from pandasai import Agent  # type: ignore[import-untyped]
 from pandasai.connectors import PandasConnector  # type: ignore[import-untyped]
 from pandasai.llm import OpenAI  # type: ignore[import-untyped]
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import PythonLexer
 
+from date_a_scientist.agent import Agent  # type: ignore[import-untyped]
 from date_a_scientist.exceptions import ModelNotFoundError
 
 
@@ -76,8 +78,9 @@ class DateAScientist:
         llm_openai_api_token: str | None = None,
         llm_openai_model: str = "gpt-4o",
         column_descriptions: dict[str, str] | str | None = None,
-        enable_cache: bool = False,
+        enable_cache: bool = True,
         verbose: bool = False,
+        cache_path: str = ".data_a_scientist_cache",
     ) -> None:
         self._df = self._fetch_df(df)
         self._column_descriptions = self._fetch_column_descriptions(column_descriptions)
@@ -87,6 +90,15 @@ class DateAScientist:
         self._llm_openai_model = llm_openai_model
         self._enable_cache = enable_cache
         self._verbose = verbose
+        self._cache_path = cache_path
+
+        if os.path.exists(self._cache_path):
+            try:
+                self._cache = json.load(open(self._cache_path, encoding="utf-8"))
+            except json.JSONDecodeError:
+                self._cache = {}
+        else:
+            self._cache = {}
 
     def _fetch_df(self, df: pd.DataFrame | str) -> pd.DataFrame:
         if isinstance(df, str) and self._is_valid_url(df):
@@ -143,8 +155,9 @@ class DateAScientist:
             raise ValueError(f"Invalid model: {llm_openai_model}. Allowed models: {self.ALLOWED_ML_MODELS}")
 
     def chat(self, q: str) -> Any:
+        answer = self._get_answer_from_cache_or_llm(q)
 
-        result = self._agent.chat(self._query(q))
+        result = answer["result"]
 
         pattern = r"/[^\s]+"
         if isinstance(result, str) and "exports/charts" in result:
@@ -167,9 +180,9 @@ class DateAScientist:
             return result
 
     def code(self, q: str) -> Any:
+        answer = self._get_answer_from_cache_or_llm(q)
 
-        code = self._agent.generate_code(self._query(q))
-        code = code.replace("dfs[0]", "df")
+        code = answer["code"]
 
         try:
             from IPython.display import HTML  # type: ignore[import]
@@ -200,7 +213,7 @@ class DateAScientist:
                 "enable_logging": False,
                 "open_charts": False,
                 "save_charts": False,
-                "enable_cache": self._enable_cache,
+                "enable_cache": False,  # cache is handled by DateAScientist
                 "save_logs": True,
                 "verbose": self._verbose,
             },
@@ -219,3 +232,21 @@ class DateAScientist:
     def _assure_llm_openai_api_token(self) -> None:
         if not self._llm_openai_api_token:
             self._llm_openai_api_token = getpass("Please enter your OpenAI API token: ")
+
+    def _get_answer_from_cache_or_llm(self, q):
+        if q not in self._cache or not self._enable_cache:
+            result = self._agent.chat(self._query(q))
+            answer = {"result": result, "code": self._agent.get_code_from_agent()}
+
+            if self._enable_cache:
+                self._cache[q] = answer
+                json.dump(self._cache, open(self._cache_path, "w", encoding="utf-8"), indent=4)
+
+            return answer
+
+        return self._cache[q]
+
+    def clean_cache(self):
+        self._cache = {}
+        if os.path.exists(self._cache_path):
+            os.remove(self._cache_path)
