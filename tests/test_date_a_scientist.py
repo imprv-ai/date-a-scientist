@@ -174,3 +174,72 @@ class TestDateAScientist(BaseTestCase):
         #   references to io or os modules or b64decode method which can be used to execute or access system resources
         #   in unsafe ways.\n'
         assert ds.chat("Jakie imię jest ostatnie?") == "Charlie"
+
+    def test_data_scientist__use_cache(self):
+
+        # GIVEN
+        from date_a_scientist import Agent
+
+        agent_get_code = self.mocker.patch.object(Agent, "get_code_from_agent", return_value="print('Alice')")
+        agent_chat = self.mocker.patch.object(Agent, "chat", return_value="Alice")
+
+        df = pd.DataFrame(
+            [
+                {"name": "Alice", "age": 25, "city": "New York"},
+                {"name": "Bob", "age": 30, "city": "Los Angeles"},
+                {"name": "Charlie", "age": 35, "city": "Chicago"},
+            ]
+        )
+        ds = DateAScientist(
+            df=df,
+            llm_openai_api_token=self.openai_api_token,
+        )
+        ds.clean_cache()
+
+        # WHEN
+        ds.chat("What is the name of the first person?")
+
+        ds.code("What is the name of the first person?")
+
+        ds.chat("What is the name of the first person?")
+
+        ds.code("What is the name of the first person?")
+
+        ds.chat("What is the name of the first person?")
+
+        # THEN
+        assert len(agent_get_code.call_args_list) == 1
+        assert len(agent_chat.call_args_list) == 1
+
+    def test_data_scientist__cache_disabled(self):
+
+        # GIVEN
+        from date_a_scientist import Agent
+
+        agent_get_code = self.mocker.patch.object(Agent, "get_code_from_agent", return_value="print('Alice')")
+        agent_chat = self.mocker.patch.object(Agent, "chat", return_value="Alice")
+
+        df = pd.DataFrame(
+            [
+                {"name": "Alice", "age": 25, "city": "New York"},
+                {"name": "Bob", "age": 30, "city": "Los Angeles"},
+                {"name": "Charlie", "age": 35, "city": "Chicago"},
+            ]
+        )
+        ds = DateAScientist(df=df, llm_openai_api_token=self.openai_api_token, enable_cache=False)
+        ds.clean_cache()
+
+        # WHEN
+        ds.chat("What is the name of the first person?")
+
+        ds.code("What is the name of the first person?")
+
+        ds.chat("What is the name of the first person?")
+
+        ds.code("What is the name of the first person?")
+
+        ds.chat("What is the name of the first person?")
+
+        # THEN
+        assert len(agent_get_code.call_args_list) == 5
+        assert len(agent_chat.call_args_list) == 5
