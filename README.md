@@ -59,6 +59,17 @@ ds = DateAScientist(
 ds.chat("Who lives in Chicago?")
 ```
 
+Finally if you want to get the code that was generated, you can use `ds.code()`:
+
+```python
+ds.code("Who lives in Chicago?")
+```
+
+which will return monokai styled code. If you want to return plain code, you can use:
+```python
+ds.code("Who lives in Chicago?", return_as_string=True)
+```
+
 ## Inspirations
 
 - https://github.com/sinaptik-ai/pandas-ai
