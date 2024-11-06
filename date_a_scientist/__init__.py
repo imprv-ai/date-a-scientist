@@ -1,5 +1,5 @@
-import json
 import os
+import pickle
 import re
 from functools import cached_property
 from getpass import getpass
@@ -15,6 +15,7 @@ from pandasai.llm import OpenAI  # type: ignore[import-untyped]
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import PythonLexer
+from pygments.styles import get_style_by_name
 
 from date_a_scientist.agent import Agent  # type: ignore[import-untyped]
 from date_a_scientist.exceptions import ModelNotFoundError
@@ -94,8 +95,9 @@ class DateAScientist:
 
         if os.path.exists(self._cache_path):
             try:
-                self._cache = json.load(open(self._cache_path, encoding="utf-8"))
-            except json.JSONDecodeError:
+                with open(self._cache_path, "rb") as cache_file:
+                    self._cache = pickle.load(cache_file)
+            except (pickle.UnpicklingError, EOFError):
                 self._cache = {}
         else:
             self._cache = {}
@@ -179,16 +181,23 @@ class DateAScientist:
         else:
             return result
 
-    def code(self, q: str) -> Any:
+    def code(self, q: str, return_as_string: bool = False, dark_mode: bool = True) -> Any:
         answer = self._get_answer_from_cache_or_llm(q)
-
         code = answer["code"]
 
         try:
             from IPython.display import HTML  # type: ignore[import]
 
-            formatter = HtmlFormatter()
+            style = get_style_by_name("monokai") if dark_mode else None
+            if style:
+                formatter = HtmlFormatter(style=style)
+            else:
+                formatter = HtmlFormatter()
+
             highlighted_code = highlight(code, PythonLexer(), formatter)
+
+            if return_as_string:
+                return code
 
             return HTML(f'<style>{formatter.get_style_defs(".highlight")}</style>{highlighted_code}')
 
@@ -240,7 +249,8 @@ class DateAScientist:
 
             if self._enable_cache:
                 self._cache[q] = answer
-                json.dump(self._cache, open(self._cache_path, "w", encoding="utf-8"), indent=4)
+                with open(self._cache_path, "wb") as cache_file:
+                    pickle.dump(self._cache, cache_file)
 
             return answer
 

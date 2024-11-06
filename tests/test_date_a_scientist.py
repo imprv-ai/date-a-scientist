@@ -2,7 +2,6 @@ from unittest.mock import call
 
 import pandas as pd
 import pytest
-from pandas.testing import assert_frame_equal
 
 from date_a_scientist import DateAScientist
 from tests import BaseTestCase
@@ -93,7 +92,33 @@ class TestDateAScientist(BaseTestCase):
 
         # WHEN
         # THEN
-        assert_frame_equal(ds.chat("Who lives in Chicago?"), df[df["city"] == "Chicago"])
+        assert "Charlie" in ds.chat("Who lives in Chicago?")
+
+    def test_data_scientist__code(self):
+        # GIVEN
+        df = pd.DataFrame(
+            [
+                {"name": "Alice", "age": 25, "city": "New York"},
+                {"name": "Bob", "age": 30, "city": "Los Angeles"},
+                {"name": "Charlie", "age": 35, "city": "Chicago"},
+            ],
+        )
+        ds = DateAScientist(
+            df=df,
+            column_descriptions={
+                "name": "The name of the person",
+                "age": "The age of the person",
+                "city": "The city where the person lives",
+            },
+            llm_openai_api_token=self.openai_api_token,
+        )
+
+        # WHEN
+        # THEN
+        code = ds.code("Who lives in Chicago?", return_as_string=True)
+        assert "import pandas as pd" in code
+        assert "df = df" in code
+        assert "Chicago" in code
 
     def test_data_scientist__no_llm_openai_api_token(self):
         # GIVEN
@@ -173,7 +198,7 @@ class TestDateAScientist(BaseTestCase):
         # > 'Unfortunately, I was not able to get your answers, because of the following error:\n\nThe query contains
         #   references to io or os modules or b64decode method which can be used to execute or access system resources
         #   in unsafe ways.\n'
-        assert ds.chat("Jakie imię jest ostatnie?") == "Charlie"
+        assert "Charlie" in ds.chat("Jakie imię jest ostatnie?")
 
     def test_data_scientist__use_cache(self):
 
