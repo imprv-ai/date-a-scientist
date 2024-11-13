@@ -1,3 +1,4 @@
+import hashlib
 import os
 import pickle
 import re
@@ -81,7 +82,7 @@ class DateAScientist:
         column_descriptions: dict[str, str] | str | None = None,
         enable_cache: bool = True,
         verbose: bool = False,
-        cache_path: str = ".data_a_scientist_cache",
+        cache_path: str = ".date_a_scientist_cache",
     ) -> None:
         self._df = self._fetch_df(df)
         self._column_descriptions = self._fetch_column_descriptions(column_descriptions)
@@ -91,7 +92,9 @@ class DateAScientist:
         self._llm_openai_model = llm_openai_model
         self._enable_cache = enable_cache
         self._verbose = verbose
-        self._cache_path = cache_path
+
+        self._data_hash = self._generate_data_hash()
+        self._cache_path = f"{cache_path}_{self._data_hash}"
 
         if os.path.exists(self._cache_path):
             try:
@@ -170,8 +173,7 @@ class DateAScientist:
                     path = match.group()
 
                     try:
-                        from IPython.display import \
-                            Image  # type: ignore[import]
+                        from IPython.display import Image  # type: ignore[import]
 
                         return Image(path)
 
@@ -247,7 +249,7 @@ class DateAScientist:
             result = self._agent.chat(self._query(q))
             answer = {"result": result, "code": self._agent.get_code_from_agent()}
 
-            if self._enable_cache:
+            if self._enable_cache and not (isinstance(result, str) and "error code:" in result.lower()):
                 self._cache[q] = answer
                 with open(self._cache_path, "wb") as cache_file:
                     pickle.dump(self._cache, cache_file)
@@ -260,3 +262,15 @@ class DateAScientist:
         self._cache = {}
         if os.path.exists(self._cache_path):
             os.remove(self._cache_path)
+
+    def get_cache(self) -> dict[str, Any]:
+        return self._cache
+
+    def _generate_data_hash(self) -> str:
+        df_hash = ""
+        if self._df is not None:
+            df_to_hash = self._df.sample(n=10_000, random_state=42) if len(self._df) > 10_000 else self._df
+            df_bytes = df_to_hash.to_csv(index=False).encode()
+            df_hash = hashlib.md5(df_bytes).hexdigest()
+
+        return df_hash
