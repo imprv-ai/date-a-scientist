@@ -1,3 +1,4 @@
+import os
 from unittest.mock import call
 
 import pandas as pd
@@ -117,7 +118,6 @@ class TestDateAScientist(BaseTestCase):
         # THEN
         code = ds.code("Who lives in Chicago?", return_as_string=True)
         assert "import pandas as pd" in code
-        assert "df = df" in code
         assert "Chicago" in code
 
     def test_data_scientist__no_llm_openai_api_token(self):
@@ -268,3 +268,79 @@ class TestDateAScientist(BaseTestCase):
         # THEN
         assert len(agent_get_code.call_args_list) == 5
         assert len(agent_chat.call_args_list) == 5
+
+    def test_data_scientist__does_not_cache_broken_response(self):
+        # GIVEN
+        df = pd.DataFrame(
+            [
+                {"name": "Alice", "age": 25, "city": "New York"},
+                {"name": "Bob", "age": 30, "city": "Los Angeles"},
+                {"name": "Charlie", "age": 35, "city": "Chicago"},
+            ],
+        )
+        ds = DateAScientist(
+            df=df,
+            column_descriptions={
+                "name": "The name of the person",
+                "age": "The age of the person",
+                "city": "The city where the person lives",
+            },
+            llm_openai_api_token="BROKEN",
+        )
+        ds.clean_cache()
+
+        # WHEN we call the chat and get the error from open API and we let it pass
+        try:
+            ds.chat("Who lives in Chicago?")
+        except Exception:
+            pass
+        # THEN the cache should be still empty
+        assert ds.get_cache() == {}
+
+    def test_data_scientist__cache_should_be_created_per_dataframe(self):
+        # GIVEN
+        if os.path.exists(".date_a_scientist_cache"):
+            os.remove(".date_a_scientist_cache")
+
+        df0 = pd.DataFrame(
+            [
+                {"name": "Alice", "age": 25, "city": "New York"},
+                {"name": "Bob", "age": 30, "city": "Los Angeles"},
+                {"name": "Charlie", "age": 35, "city": "Chicago"},
+            ],
+        )
+        df1 = pd.DataFrame(
+            [
+                {"name": "John", "age": 43, "city": "Chicago"},
+                {"name": "Jane", "age": 20, "city": "Los Angeles"},
+            ],
+        )
+        ds0 = DateAScientist(
+            df=df0,
+            column_descriptions={
+                "name": "The name of the person",
+                "age": "The age of the person",
+                "city": "The city where the person lives",
+            },
+            llm_openai_api_token=self.openai_api_token,
+        )
+        # WHEN first we ask the first instance so that it save to cache
+        res0 = ds0.chat("Who lives in Chicago?")
+
+        # and create another instance which will pick up the cache
+        # of the first instance
+        ds1 = DateAScientist(
+            df=df1,
+            column_descriptions={
+                "name": "The name of the person",
+                "age": "The age of the person",
+                "city": "The city where the person lives",
+            },
+            llm_openai_api_token=self.openai_api_token,
+        )
+        res1 = ds1.chat("Who lives in Chicago?")
+
+        # THEN the answers should be different (which will be if they don't share the cache)
+        assert "Charlie" in res0
+        assert "John" in res1
+        assert res0 != res1

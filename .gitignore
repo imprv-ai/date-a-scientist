@@ -35,6 +35,7 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+.date_a_scientist_cache_*
 
 # Unit test / coverage reports
 htmlcov/
