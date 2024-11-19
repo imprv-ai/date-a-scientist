@@ -23,7 +23,6 @@ from date_a_scientist.exceptions import ModelNotFoundError
 
 
 class _CustomOpenAI(OpenAI):
-
     def completion(self, *args, **kwargs) -> str:
         try:
             text = super().completion(*args, **kwargs)
@@ -67,7 +66,6 @@ class _CustomOpenAI(OpenAI):
 
 
 class DateAScientist:
-
     ALLOWED_ML_MODELS = [
         "gpt-4o",
         "gpt-4-turbo",
@@ -144,11 +142,15 @@ class DateAScientist:
     def _fetch_column_descriptions(
         self, column_descriptions: dict[str, str] | str | None = None
     ) -> dict[str, str] | None:
-        if isinstance(column_descriptions, str) and self._is_valid_url(column_descriptions):
+        if isinstance(column_descriptions, str) and self._is_valid_url(
+            column_descriptions
+        ):
             return requests.get(column_descriptions).json()
 
         elif isinstance(column_descriptions, str):
-            raise ValueError("Please provide a valid URL to fetch the column descriptions.")
+            raise ValueError(
+                "Please provide a valid URL to fetch the column descriptions."
+            )
 
         return column_descriptions
 
@@ -157,7 +159,9 @@ class DateAScientist:
 
     def _validate_model(self, llm_openai_model: str) -> None:
         if llm_openai_model not in self.ALLOWED_ML_MODELS:
-            raise ValueError(f"Invalid model: {llm_openai_model}. Allowed models: {self.ALLOWED_ML_MODELS}")
+            raise ValueError(
+                f"Invalid model: {llm_openai_model}. Allowed models: {self.ALLOWED_ML_MODELS}"
+            )
 
     def chat(self, q: str) -> Any:
         answer = self._get_answer_from_cache_or_llm(q)
@@ -183,8 +187,10 @@ class DateAScientist:
         else:
             return result
 
-    def code(self, q: str, return_as_string: bool = False, dark_mode: bool = True) -> Any:
-        answer = self._get_answer_from_cache_or_llm(q)
+    def code(
+        self, q: str, return_as_string: bool = False, dark_mode: bool = True
+    ) -> Any:
+        answer = self._get_answer_from_cache_or_llm(q, allow_image_cache=True)
         code = answer["code"]
 
         try:
@@ -201,7 +207,9 @@ class DateAScientist:
             if return_as_string:
                 return code
 
-            return HTML(f'<style>{formatter.get_style_defs(".highlight")}</style>{highlighted_code}')
+            return HTML(
+                f'<style>{formatter.get_style_defs(".highlight")}</style>{highlighted_code}'
+            )
 
         except ImportError:
             return code
@@ -210,10 +218,14 @@ class DateAScientist:
     def _agent(self):
         self._assure_llm_openai_api_token()
 
-        llm = _CustomOpenAI(model=self._llm_openai_model, api_token=self._llm_openai_api_token)
+        llm = _CustomOpenAI(
+            model=self._llm_openai_model, api_token=self._llm_openai_api_token
+        )
 
         if self._column_descriptions:
-            connector = PandasConnector({"original_df": self._df}, field_descriptions=self._column_descriptions)
+            connector = PandasConnector(
+                {"original_df": self._df}, field_descriptions=self._column_descriptions
+            )
         else:
             connector = PandasConnector({"original_df": self._df})
 
@@ -244,19 +256,36 @@ class DateAScientist:
         if not self._llm_openai_api_token:
             self._llm_openai_api_token = getpass("Please enter your OpenAI API token: ")
 
-    def _get_answer_from_cache_or_llm(self, q):
-        if q not in self._cache or not self._enable_cache:
+    def _get_answer_from_cache_or_llm(self, q, allow_image_cache: bool = False):
+        answer = self._cache.get(q) or {}
+        is_image_entry = isinstance(
+            answer.get("result"), str
+        ) and "exports/charts" in answer.get("result", "")
+        contains_error = isinstance(answer.get("result"), str) and (
+            "error code:" in answer.get("result", "").lower()
+            or "unfortunately" in answer.get("result", "").lower()
+        )
+
+        if (
+            (q not in self._cache)
+            or (not self._enable_cache)
+            or (is_image_entry and not allow_image_cache)
+            or contains_error
+        ):
             result = self._agent.chat(self._query(q))
             answer = {"result": result, "code": self._agent.get_code_from_agent()}
 
-            if self._enable_cache and not (isinstance(result, str) and "error code:" in result.lower()):
+            if self._enable_cache and not (
+                isinstance(result, str)
+                and (
+                    "error code:" in result.lower() or "unfortunately" in result.lower()
+                )
+            ):
                 self._cache[q] = answer
                 with open(self._cache_path, "wb") as cache_file:
                     pickle.dump(self._cache, cache_file)
 
-            return answer
-
-        return self._cache[q]
+        return answer
 
     def clean_cache(self):
         self._cache = {}
@@ -269,7 +298,11 @@ class DateAScientist:
     def _generate_data_hash(self) -> str:
         df_hash = ""
         if self._df is not None:
-            df_to_hash = self._df.sample(n=10_000, random_state=42) if len(self._df) > 10_000 else self._df
+            df_to_hash = (
+                self._df.sample(n=10_000, random_state=42)
+                if len(self._df) > 10_000
+                else self._df
+            )
             df_bytes = df_to_hash.to_csv(index=False).encode()
             df_hash = hashlib.md5(df_bytes).hexdigest()
 
