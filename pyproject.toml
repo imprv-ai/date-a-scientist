@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "date-a-scientist"
-version = "0.1.16"
+version = "0.1.17"
 description = "Query dataframes, find issue with your notebook snippets as if a professional data scientist was pair coding with you"
 authors = ["IMPRV Dev Team <dev@imprv.ai>"]
 readme = "README.md"
@@ -42,6 +42,7 @@ isort = "^5.13.2"
 pytest-timeout = "^2.3.1"
 ipykernel = "^6.29.5"
 types-requests = "^2.32.0.20240622"
+seaborn = "^0.13.2"
 
 [build-system]
 requires = ["poetry-core"]
