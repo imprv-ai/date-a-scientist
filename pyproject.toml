@@ -17,7 +17,7 @@ Issues = "https://github.com/imprv-ai/date-a-scientist/issues"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pandasai = "2.3.0"
+pandasai = "==2.3.0"
 pygments = "^2.18.0"
 numpy = "1.26.4"
 validators = "^0.31.0"
