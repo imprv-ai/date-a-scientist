@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "date-a-scientist"
-version = "0.1.18"
+version = "0.1.19"
 description = "Query dataframes, find issue with your notebook snippets as if a professional data scientist was pair coding with you"
 authors = ["IMPRV Dev Team <dev@imprv.ai>"]
 readme = "README.md"
