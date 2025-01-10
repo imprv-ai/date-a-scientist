@@ -292,6 +292,16 @@ class DateAScientist:
         if os.path.exists(self._cache_path):
             os.remove(self._cache_path)
 
+    def clean_all_cache(self):
+        cache_dir = os.path.dirname(self._cache_path) or "."
+        cache_prefix = os.path.basename(self._cache_path).split('_')[0]
+
+        for filename in os.listdir(cache_dir):
+            if filename.startswith(cache_prefix):
+                file_path = os.path.join(cache_dir, filename)
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+
     def get_cache(self) -> dict[str, Any]:
         return self._cache
 
